@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>풀켈린더</title>
+        <script src="main.js"></script>
+    </head>
+    <body>
+        <div id='calendar'></div>
+    </body>
+    <script>
+        var calendarEl = document.getElementById('calendar');
+        calendarEl.innerHTML = "";
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            plugins: [ 'interaction', 'dayGrid', 'timeGrid', 'list' ],
+            header: {
+                left: 'today',
+                center: 'title',
+                right: ''
+            },
+            footer:{
+                left: 'prev,next',
+                center: '',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            defaultView: 'dayGridMonth',
+            defaultDate: fn_getStrDate(new Date()),
+            navLinks: true, // can click day/week names to navigate views
+            editable: true,
+            height: 700,
+            eventLimit: true, // allow "more" link when too many events
+            // events: list,
+            eventClick : function(info){
+                fn_setData(info);
+                $("#btn_register").hide();
+                $("#btn_delete").show();
+                $("#btn_update").show();
+                $('#modaldemo1').modal('show');
+            },
+            eventDrop: function(info){
+                fn_setData(info);
+                fn_ajax_call('update');
+            },
+            eventResize: function(info){
+                fn_setData(info);
+                fn_ajax_call('update');
+            },
+            selectable: true,
+            //selectMirror: true,
+            select: function(event){
+                selectedEvent = '';
+                var sdate = event.start;
+                var edate = event.end;
+                $("#title").val('');
+                $("#startDay").val(fn_getStrDate(sdate));
+                $("#startHour").val(fn_getStrHour(sdate));
+                $("#startMin").val(fn_getStrMin(sdate));
+                $("#endDay").val(fn_getStrDate(edate));
+                $("#endHour").val(fn_getStrHour(edate));
+                $("#endMin").val(fn_getStrMin(edate));
+                $("#todoListSeq").val('');
+                $("#cmpYn").val("N");
+                $("#btn_register").show();
+                $("#btn_delete").hide();
+                $("#btn_update").hide();
+                $('#modaldemo1').modal('show');
+            }
+        });
+        calendar.render();
+
+        function fn_getStrDate(date){
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            if(month < 10) month = "0" + month;
+            if(day < 10) day = "0" + day;
+            return year + "-" + month + "-" + day;
+        }
+    </script>
+</html>
