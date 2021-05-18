@@ -1,47 +1,62 @@
-'use strict';
+#1. Use strict
+자바스크립트는 매우 유연하다. 유연함은 위험할 수도 있다. 일반 개발자들이 상식적으로 생각했던 문법들이 자바스크립트에서는 깨질수 있다. 예를 들면 아래와 같다.
 
-//2. Variable
-//let (added in ES6)
+```javascript
+a = "안녕";
+```
 
-//block scope
+위와 같이 변수 선언도 없이 바로 할당하여도 자바스크립트 내부적으로는 에러 없이 생성한다. 저런 코드는 작성할때는 편하긴 하겠지만 매우 위험한 코드가 될 수 있다. 다른 곳에서 이미 사용한 변수인지 이제 막 생성한 변수 인지 알 수 없기 때문이다.
+
+#2. Block Scope
+
+```javascript
 {
-    let name = 'ellie';
-    console.log(name);
-    name = 'hello';
-    console.log(name);
+  let name = "ck";
+  name = "kc";
+  console.log(name);
 }
-// console.log(name); //error
+```
 
-// var (don't ever use this!)
-// var hoisting (move declaration from bottom to top)
-// var no block scope
-console.log(age);
+위와 같이 자바스크립트에서는 스코프(범위)를 만들 수 있다. 코드 블럭 안에 선언된 변수는 블럭 안에서만 사용 할 수 있다.
+
+```javascript
+{
+  let name = "ck";
+  name = "kc";
+}
+console.log(name);
+```
+
+이렇게 블럭 밖에서 참조한다면 "name is not defined" 에러를 만날 것이다.
+
+#3. var의 특징
+호이스팅되고 블럭스코프를 허용하지 않는다.
+
+```javascript
+console.log(`age1: ${age}`); //undefined
 age = 4;
-console.log(age);
+console.log(`age2: ${age}`); //4
 var age;
 
 {
-    age = 4;
-    var age;
+  age = 2;
+  var age;
+  console.log(`age3: ${age}`); //2
 }
-console.log(age); //no error
+console.log(`age4: ${age}`); //2
+```
 
-//3.Contant, r(read only)
-//use const whenever possible.
-//only use let if variable needs to change.
-const daysInWeek = 7;
-const maxNumber = 5;
+# 4.Contant, r(read only)
 
-//Note!
-//Immutable data types: primitive types, frozen objects (i.e. object.freeze())
-//Mutable data types: all objects by default are mutable in JS
-//favor immutable data type always for a few reasons:
-// - security
-// - thread safety
-// - reduce human mistakes
+const는 변경 불가능한 데이터를 담는다. 한번 담으면 끝!
+이와 같은 변수를 사용하는 이유는
 
+- security
+- thread safety
+- reduce human mistakes
 
-//4.Variable types
+# 5.변수 타입
+
 // primitive, single item: number, string, boolean, null, undefiend, symbol
 // object, box container
 // function, first-class function
@@ -59,7 +74,7 @@ console.log(negariveInfinity);
 console.log(nAn);
 
 //bigInt (fairly new, don't use it yet) n을 붙여줘야한다.
-const bigInt = 1234567890123456789012345678901234567890n; // over (-2**53) ~ 2*53)
+const bigInt = 1234567890123456789012345678901234567890n; // over (-2\**53) ~ 2*53)
 console.log(`value: ${bigInt}, type: ${typeof bigInt}`);
 Number.MAX_SAFE_INTEGER;
 
@@ -99,15 +114,3 @@ console.log(`symbol2: ${symbol2.description}`);
 const gSymbol1 = Symbol.for('id');
 const gSymbol2 = Symbol.for('id');
 console.log(gSymbol1 === gSymbol2);
-
-//5.Dynamic typing: dynamically typed language
-let text = 'hello';
-console.log(text.charAt(0));
-console.log(`value: ${text}, type:${typeof text}`);
-text = 1;
-console.log(`value: ${text}, type:${typeof text}`);
-text = '7' + 5;
-console.log(`value: ${text}, type:${typeof text}`);
-text = '8' / '2';
-console.log(`value: ${text}, type:${typeof text}`);
-// console.log(text.charAt(0)); //error

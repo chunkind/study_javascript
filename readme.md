@@ -1,5 +1,28 @@
 # 링크 정리
 
+## 01.변수
+
+MDN Web API -
+https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Client-side_web_APIs/Introduction
+
+Web API collection -
+https://developer.mozilla.org/en-US/docs/Web/API
+
+Security -
+https://www.thoughtco.com/what-javascript-cannot-do-2037666
+
+Document
+https://developer.mozilla.org/en-US/docs/Web/API/Document
+
+Window
+https://developer.mozilla.org/en-US/docs/Web/API/Window
+
+Viewport
+https://developer.mozilla.org/en-US/docs/Glossary/layout_viewport
+
+Navigator
+https://developer.mozilla.org/en-US/docs/Web/API/Navigator
+
 📒 강의 노트 & 자주 나오는 질문: https://github.com/dream-ellie/learn-javascript
 
 📓 드림코딩 유튜브 채널 공부 순서
