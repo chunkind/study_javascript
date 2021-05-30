@@ -2,18 +2,6 @@ window.addEventListener("load", drawScreen, false);
 window.addEventListener("keydown", onKeydown, false);
 window.addEventListener("keyup", onKeyup, false);
 
-var intPlayerX = 350;
-var intPlayerY = 250;
-var intPlayerSpeed = 10;
-
-var GAME_START_READY = 0;
-var GAME_START_GAME = 1;
-var GAME_START_OVER = 2;
-
-var gameState = GAME_START_READY;
-
-var arrMissiles = new Array();
-
 var imgBackground = new Image();
 imgBackground.src = "../images/background.png";
 
@@ -23,11 +11,22 @@ imgPlayer.src = "../images/player.png"
 var imgMissile = new Image();
 imgMissile.src = "../images/missile.png";
 
+var GAME_START_READY = 0;
+var GAME_START_GAME = 1;
+var GAME_START_OVER = 2;
+
+var gameState = GAME_START_READY;
+
+var arrMissiles = new Array();
+
 var isKeyPressed = [];
 
-var fps = 40;
+var intPlayerX = 350, intPlayerY = 250, intPlayerSpeed = 10; //플래이어 x,y좌표, 속도
+var fps = 40; //초당 프레임수
+var intervalId = 0; //timer id값
+var intTime = 0; //수치값 계산
 
-var intervalId = 0;
+//========================리스터 핸들러===========================
 
 //수치가 계산된 내용을 그려주는 역활
 function drawScreen(){
@@ -59,37 +58,111 @@ function drawScreen(){
     }
 }
 
-//수치값 계산
-var intTime = 0;
+function onKeydown(e){
+    if(gameState == GAME_START_READY)
+        if(e.keyCode == 13) onGameStart();
+    if(gameState == GAME_START_GAME)
+        this.isKeyPressed[e.keyCode] = true;
+    if(gameState == GAME_START_OVER)
+        if(e.keyCode == 13) onGameReady();
+}
+
+function onKeyup(e){
+    this.isKeyPressed[e.keyCode] = false;
+}
+
+//========================게임관련 로직===========================
+function onGameStart(){
+    gameState = GAME_START_GAME;
+
+    //미사일 초기에 50개 그려줄거임
+    var intX, intY, intGoX, intGoY;
+    for(var i=0; i<50; i++){
+        var MisiileType = RandomNextInt(4);
+        switch(MisiileType){
+            case 1: //왼쪽 총알
+            intX = 0;
+            intY = RandomNextInt(600);
+            intGoX = RandomNextInt(2);
+            intGoY = -2 + RandomNextInt(4);
+                break;
+            case 2: //오른쪽 총알
+            intX = 800;
+            intY = RandomNextInt(600);
+            intGoX = -RandomNextInt(2);
+            intGoY = -2 + RandomNextInt(4);
+                break;
+            case 3: //위쪽 총알
+            intX = RandomNextInt(800);
+            intY = 0;
+            intGoX = -2 + RandomNextInt(4);
+            intGoY = RandomNextInt(2);
+                break;
+            case 4: //아래쪽 총알
+            intX = RandomNextInt(800);
+            intY = 600;
+            intGoX = -2 + RandomNextInt(4);
+            intGoY = -RandomNextInt(2);
+                break;
+        }
+        arrMissiles.push({x:intX, y:intY, go_x:intGoX, go_y:intGoY});
+    }
+
+    intervalId = setInterval(InGameUpdate, 1000/fps);
+}
+
+function onGameReady(){
+    gameState = GAME_START_READY;
+
+    //타이머 초기화
+    intTime = 0;
+
+    //좌표 초기화
+    intPlayerX = 350;
+    intPlayerY = 250;
+
+    //미사일 초기화.
+    while(arrMissiles.length != 0){
+        arrMissiles.pop();
+    }
+
+    drawScreen();
+}
+
+function onGameOver(){
+    gameState = GAME_START_OVER;
+    clearInterval(intervalId);
+}
+
 function InGameUpdate(){
     var intX=0, intY=0, intGoX=0, intGoY=0;
     if(intTime % 5000 == 0){
         for(var i=0; i<4; i++){
             switch(i){
-                case 0: //위,왼쪽
+                case 0: //왼쪽 총알
                 intX = 0;
+                intY = RandomNextInt(600);
+                intGoX = RandomNextInt(2);
+                intGoY = -2 + RandomNextInt(4);
+                    break;
+                case 1: //오른쪽 총알
+                intX = 800;
+                intY = RandomNextInt(600);
+                intGoX = -RandomNextInt(2);
+                intGoY = -2 + RandomNextInt(4);
+                    break;
+                case 2: //위쪽 총알
+                intX = RandomNextInt(800);
                 intY = 0;
-                intGoX = 5;
-                intGoY = 5;
-                break;
-                case 1: //위, 오른쪽
-                intX = 740;
-                intY = 0;
-                intGoX = -5;
-                intGoY = 5;
-                break;
-                case 2: //아래, 왼쪽
-                intX = 0;
-                intY = 540;
-                intGoX = 5;
-                intGoY = -5;
-                break;
-                case 3: //아래, 오른쪽
-                intX = 740;
-                intY = 540;
-                intGoX = -5;
-                intGoY = -5;
-                break;
+                intGoX = -2 + RandomNextInt(4);
+                intGoY = RandomNextInt(2);
+                    break;
+                case 3: //아래쪽 총알
+                intX = RandomNextInt(800);
+                intY = 600;
+                intGoX = -2 + RandomNextInt(4);
+                intGoY = -RandomNextInt(2);
+                    break;
             }
             arrMissiles.push({x:intX, y:intY, go_x:intGoX, go_y:intGoY});
         }
@@ -101,6 +174,10 @@ function InGameUpdate(){
     MoveCharator();
 
     drawScreen();
+}
+
+function RandomNextInt(max){
+    return 1 + Math.floor(Math.random() * max);
 }
 
 function MoveCharator(){
@@ -137,13 +214,10 @@ function MoveMissile(){
        arrMissiles[i].x += arrMissiles[i].go_x;
        arrMissiles[i].y += arrMissiles[i].go_y;
 
-
        if(IsCollisionWithPlayer(arrMissiles[i].x, arrMissiles[i].y)){
            onGameOver();
        }
-
     }
-    
 }
 
 function IsCollisionWithPlayer(missileX, missileY){
@@ -169,37 +243,5 @@ function IsCollisionWithPlayer(missileX, missileY){
         return true;
     }
 
-    // if(intPlayerX + 55 > missileX + 5 &&
-    //     intPlayerX + 5 < missileX + 55 &&
-    //     intPlayerY + 5 < missileY + 55 &&
-    //     intPlayerY + 55 > missileY + 5){
-    //     return true;
-    // }
     return false;
-}
-
-function onGameOver(){
-    gameState = GAME_START_OVER;
-    clearInterval(intervalId);
-}
-
-function onKeydown(e){
-    if(gameState == GAME_START_READY){    
-        if(e.keyCode == 13){
-            gameState = GAME_START_GAME;
-            intervalId = setInterval(InGameUpdate, 1000/fps);
-        }
-    }
-    if(gameState == GAME_START_GAME){
-        this.isKeyPressed[e.keyCode] = true;
-    }
-    if(gameState == GAME_START_OVER){
-        if(e.keyCode == 13)
-        gameState = GAME_START_READY;
-    }
-}
-
-function onKeyup(e){
-    this.isKeyPressed[e.keyCode] = false;
-    // drawScreen();
 }
