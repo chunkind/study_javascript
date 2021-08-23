@@ -234,7 +234,9 @@ $(function(){
         var userList = LADDER[0];
         var html = '';
         for(var i=0; i <  userList.length; i++){
-            var color = '#'+(function lol(m,s,c){return s[m.floor(m.random() * s.length)] + (c && lol(m,s,c-1));})(Math,'0123456789ABCDEF',4);
+            var color = '#'+(function lol(m,s,c){
+                return s[m.floor(m.random() * s.length)] + (c && lol(m,s,c-1));
+            })(Math,'0123456789ABCDEF',4);
             var x = userList[i].split('-')[0]*1;
             var y = userList[i].split('-')[1]*1;
             var left = x * 100  -30
