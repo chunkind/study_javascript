@@ -3,66 +3,56 @@ window.addEventListener('keydown', onKeydown, false);
 window.addEventListener('keyup', onKeyup, false);
 
 const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 600;
+const SCREEN_HEIGHT = 400;
 
 const DEFAULT_CHAR_WIDTH = 80;
 const DEFAULT_CHAR_HEIGHT = 80;
+const DEFAULT_YPOS = DEFAULT_CHAR_HEIGHT * 3;
 
-const DIRECT_DOWN = 0 * DEFAULT_CHAR_HEIGHT;
-const DIRECT_UP = 1 * DEFAULT_CHAR_HEIGHT;
-const DIRECT_LEFT = 2 * DEFAULT_CHAR_HEIGHT;
-const DIRECT_RIGHT = 3 * DEFAULT_CHAR_HEIGHT;
+const DIRECT_RIGHT = 0;
+const DIRECT_LEFT = 1;
+
+const ACT_IDLE = 0;
+const ACT_MOVE = 2;
+const ACT_JUMP = 4;
+const ACT_PNCH = 6;
 
 let dataIntervalId = 0;
 let drawIntervalId = 0;
 var isKeyPressed = [];
-let fps = 20;
+let fps = 15;
+
+const PLAY_IMG = new Image();
+PLAY_IMG.src = '../images/player_ck.png';
+
+const SLIME_IMG = new Image();
+SLIME_IMG.src = '../images/greenslime.png';
+
+const MAP_IMG = new Image();
+MAP_IMG.src = '../images/map.png';
 
 const allObj = {
   'player':{
     'name':'player',
-    'imgsrc':'../images/janghoon.png',
-    'speed': 10,
-    'xpos': 100,
-    'ypos': 100,
+    'speed': 20,
+    'xpos': 0,
+    'ypos': DEFAULT_YPOS,
     'width': DEFAULT_CHAR_WIDTH,
     'height': DEFAULT_CHAR_HEIGHT,
-    'direct': DIRECT_DOWN,
-    'img':function(){
-      let img = new Image();
-      img.src = this.imgsrc;
-      return img;
-    }
+    'direct': DIRECT_RIGHT,
+    'act': ACT_IDLE,
+    'img': PLAY_IMG
   },
   'slime':{
     'name':'slime',
-    'imgsrc':'../images/slime.png',
     'speed': 10,
-    'xpos': 200,
-    'ypos': 200,
+    'xpos': SCREEN_WIDTH-DEFAULT_CHAR_WIDTH,
+    'ypos': DEFAULT_YPOS,
     'width': DEFAULT_CHAR_WIDTH,
     'height': DEFAULT_CHAR_HEIGHT,
     'direct': DIRECT_LEFT,
-    'img':function(){
-      let img = new Image();
-      img.src = this.imgsrc;
-      return img;
-    }
-  },
-  'shoot':{
-    'name':'shoot',
-    'imgsrc':'../images/shoot.png',
-    'speed': 10,
-    'xpos': 200,
-    'ypos': 200,
-    'width': DEFAULT_CHAR_WIDTH,
-    'height': DEFAULT_CHAR_HEIGHT,
-    'direct': DIRECT_LEFT,
-    'img':function(){
-      let img = new Image();
-      img.src = this.imgsrc;
-      return img;
-    }
+    'act': ACT_IDLE,
+    'img': SLIME_IMG
   }
 };
 
@@ -76,84 +66,154 @@ function drawScreen(){
   context.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   movePlayer();
-  if(callCnt%50 == 0){
-    moveSlime();
-  }
-  drawObject(context, callCnt);
-
-  let cnt = callCnt%3
+  moveSlime();
+  drawObject(context);
+  drawGraund(context);
 
 }
 
-function drawObject(context, callCnt){
-  let cnt = callCnt%3;
+function drawObject(context){
+  let cnt = Math.floor(callCnt/2)%4;
   for(const key in allObj){
-    context.drawImage(allObj[key].img()
-      , allObj[key].width * cnt, allObj[key].direct, allObj[key].width, allObj[key].height
+    let pic_start_x = (allObj[key].direct + allObj[key].act) * DEFAULT_CHAR_HEIGHT;
+    let pic_img = allObj[key].img;
+    context.drawImage(pic_img
+      , allObj[key].width * cnt, pic_start_x, allObj[key].width, allObj[key].height
       , allObj[key].xpos, allObj[key].ypos, allObj[key].width, allObj[key].height);
   }
 }
 
-function movePlayer(){
-  if(isKeyPressed[40]){ //아래쪽
-    allObj["player"].ypos += allObj["player"].speed;
-    allObj["player"].direct = 0;
-    if(allObj["player"].ypos > SCREEN_HEIGHT-allObj["player"].height){
-      allObj["player"].ypos = SCREEN_HEIGHT-allObj["player"].height;
+
+const map = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+];
+
+function drawGraund(context){
+  for(let y=0; y<map.length; y++){
+    let ymax = map[y].length;
+    for(let x=0; x<ymax; x++){
+      let tileType = 0;
+      if(x == 0){
+        tileType = 0;
+      }else if(x == ymax-1){
+        tileType = 160;
+      }else{
+        tileType = 80;
+      }
+      
+      if(map[y][x] == 2){
+        context.drawImage(MAP_IMG
+          ,tileType , DEFAULT_CHAR_WIDTH * 0, DEFAULT_CHAR_WIDTH, DEFAULT_CHAR_HEIGHT
+          ,DEFAULT_CHAR_WIDTH * x, DEFAULT_CHAR_HEIGHT * y, DEFAULT_CHAR_WIDTH, DEFAULT_CHAR_HEIGHT);
+      }
     }
   }
-  if(isKeyPressed[38]){ //위쪽
-    allObj["player"].ypos -= allObj["player"].speed;;
-    allObj["player"].direct = 80;
-    if(allObj["player"].ypos < 0){
-      allObj["player"].ypos = 0;
+}
+
+let jump = 4;
+function movePlayer(){
+  //Action
+  if(allObj["player"].act == ACT_JUMP){
+    if(jump == 0){
+      allObj["player"].ypos -= allObj["player"].speed * 3;
+    }
+    else if(jump == 1){
+      allObj["player"].ypos -= allObj["player"].speed * 3;
+    }
+    else if(jump == 2){
+      allObj["player"].ypos += allObj["player"].speed * 3;
+    }
+    else if(jump == 3){
+      allObj["player"].ypos += allObj["player"].speed * 3;
+      allObj["player"].act = ACT_IDLE;
+    }
+    jump++;
+  }
+
+  if(isKeyPressed[32]){ //스페이스 바
+    if(allObj["player"].act != ACT_JUMP){
+      allObj["player"].act = ACT_PNCH;
+    }
+  }
+
+  if(isKeyPressed[38]){ // 위쪽
+    if(allObj["player"].act != ACT_JUMP){
+      allObj["player"].act = ACT_JUMP;
+      jump = 0;
+    }
+  }
+  if(isKeyPressed[39]){ //오른쪽
+    allObj["player"].xpos += allObj["player"].speed;
+    allObj["player"].direct = DIRECT_RIGHT;
+    if(allObj["player"].act != ACT_JUMP){
+      allObj["player"].act = ACT_MOVE;
+    }
+    if(allObj["player"].xpos > SCREEN_WIDTH-allObj["player"].width){
+      allObj["player"].xpos = SCREEN_WIDTH-allObj["player"].width;
     }
   }
   if(isKeyPressed[37]){ //왼쪽
-    allObj["player"].xpos -= allObj["player"].speed;;
-    allObj["player"].direct = 160;
+    allObj["player"].xpos -= allObj["player"].speed;
+    allObj["player"].direct = DIRECT_LEFT;
+    if(allObj["player"].act != ACT_JUMP){
+      allObj["player"].act = ACT_MOVE;
+    }
     if(allObj["player"].xpos < 0){
       allObj["player"].xpos = 0;
     }
   }
-  if(isKeyPressed[39]){ //오른쪽
-    allObj["player"].xpos += allObj["player"].speed;;
-    allObj["player"].direct = 240;
-    if(allObj["player"].xpos > SCREEN_WIDTH-allObj["player"].width){
-      allObj["player"].xpos = SCREEN_WIDTH-allObj["player"].width;
+
+  //방향키 안눌렀을때 숨쉬기 상태.
+  if(!isKeyPressed[37] && !isKeyPressed[38] && !isKeyPressed[39] && !isKeyPressed[40] && !isKeyPressed[32]){
+    if(allObj["player"].act != ACT_JUMP){
+      allObj["player"].act = ACT_IDLE;
     }
   }
 }
 
 function moveSlime(){
-  let silme = allObj["slime"];
-  let randomeCnt = Math.floor(Math.random()*4);
-  if(randomeCnt==0){
-    silme.direct = DIRECT_LEFT;
-    silme.xpos -= silme.speed;
+  let slime = allObj["slime"];
+  let randomeCnt = Math.floor(Math.random()*2);
+  if(callCnt%50 == 0){
+    if(randomeCnt==0){
+      slime.direct = DIRECT_LEFT;
+      slime.act = ACT_MOVE;
+      slime.xpos -= slime.speed;
+      if(slime.xpos < 0){
+        slime.xpos = 0;
+      }
+    }else if(randomeCnt==1){
+      slime.direct = DIRECT_RIGHT;
+      slime.act = ACT_MOVE;
+      slime.xpos += slime.speed;
+      if(slime.xpos > SCREEN_WIDTH-slime.width){
+        slime.xpos = SCREEN_WIDTH-slime.width;
+      }
+    }
+  }else{
+    slime.act = ACT_IDLE;
   }
-  if(randomeCnt==1){
-    silme.direct = DIRECT_RIGHT;
-    silme.xpos += silme.speed;
-  }
-  if(randomeCnt==2){
-    silme.direct = DIRECT_UP;
-    silme.ypos -= silme.speed;
-  }
-  if(randomeCnt==3){
-    silme.direct = DIRECT_DOWN;
-    silme.ypos += silme.speed;
-  }
+  
 }
 
 function onGameStart(){
   drawIntervalId = setInterval(drawScreen, 1000/fps)
 }
 
+function onGameStop(){
+  clearInterval(drawIntervalId);
+}
+
 function onKeydown(e){
+  // console.log(`keyCode:${e.keyCode}`);
   this.isKeyPressed[e.keyCode] = true;
 }
 
 function onKeyup(e){
   this.isKeyPressed[e.keyCode] = false;
 }
+
