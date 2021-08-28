@@ -2,9 +2,6 @@ window.addEventListener('load', onGameStart, false);
 window.addEventListener('keydown', onKeydown, false);
 window.addEventListener('keyup', onKeyup, false);
 
-const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 400;
-
 const DEFAULT_CHAR_WIDTH = 80;
 const DEFAULT_CHAR_HEIGHT = 80;
 const DEFAULT_YPOS = DEFAULT_CHAR_HEIGHT * 3;
@@ -20,7 +17,7 @@ const ACT_PNCH = 6;
 let dataIntervalId = 0;
 let drawIntervalId = 0;
 var isKeyPressed = [];
-let fps = 15;
+let fps = 5;
 
 const PLAY_IMG = new Image();
 PLAY_IMG.src = '../images/player_ck.png';
@@ -30,6 +27,14 @@ SLIME_IMG.src = '../images/greenslime.png';
 
 const MAP_IMG = new Image();
 MAP_IMG.src = '../images/map.png';
+
+let callCnt = 0;
+
+const CANVAS = document.createElement('canvas');
+const CONTEXT = CANVAS.getContext('2d');
+
+let canvasWidth = DEFAULT_CHAR_WIDTH * 10;
+let canvasHeight = DEFAULT_CHAR_HEIGHT * 5;
 
 const allObj = {
   'player':{
@@ -46,7 +51,7 @@ const allObj = {
   'slime':{
     'name':'slime',
     'speed': 10,
-    'xpos': SCREEN_WIDTH-DEFAULT_CHAR_WIDTH,
+    'xpos': canvasWidth - DEFAULT_CHAR_WIDTH,
     'ypos': DEFAULT_YPOS,
     'width': DEFAULT_CHAR_WIDTH,
     'height': DEFAULT_CHAR_HEIGHT,
@@ -56,19 +61,39 @@ const allObj = {
   }
 };
 
-let callCnt = 0;
+const map = [
+  [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+  [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+  [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+  [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+  [ 0,  1,  2, -1,  0,  1,  1,  1,  2, -1,  0,  1,  1,  1,  1,  1,  1,  1,  1,  2]
+];
+
+function onGameStart(){
+  document.body.appendChild(CANVAS);
+
+  window.addEventListener('resize', resize, false);
+  resize();
+
+  drawIntervalId = setInterval(drawScreen, 1000/fps)
+}
+
+function resize(){
+  CANVAS.width = canvasWidth;
+  CANVAS.height = canvasHeight;
+  CONTEXT.scale(1, 1);
+}
 
 function drawScreen(){
   callCnt++;
-  let gameCanvas = document.getElementById("main_canvas");
-  let context = gameCanvas.getContext("2d");
-  context.fillStyle = "#fff";
-  context.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+  
+  CONTEXT.fillStyle = "#fff";
+  CONTEXT.fillRect(0, 0, canvasWidth, canvasHeight);
 
   movePlayer();
   moveSlime();
-  drawObject(context);
-  drawGraund(context);
+  drawObject(CONTEXT);
+  drawGraund(CONTEXT);
 
 }
 
@@ -83,31 +108,22 @@ function drawObject(context){
   }
 }
 
-
-const map = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-];
-
 function drawGraund(context){
   for(let y=0; y<map.length; y++){
     let ymax = map[y].length;
     for(let x=0; x<ymax; x++){
-      let tileType = 0;
-      if(x == 0){
-        tileType = 0;
-      }else if(x == ymax-1){
-        tileType = 160;
-      }else{
-        tileType = 80;
-      }
+      // let tileType = 0;
+      // if(x == 0){
+      //   tileType = 0;
+      // }else if(x == ymax-1){
+      //   tileType = 160;
+      // }else{
+      //   tileType = 80;
+      // }
       
-      if(map[y][x] == 2){
+      if(map[y][x] > -1){
         context.drawImage(MAP_IMG
-          ,tileType , DEFAULT_CHAR_WIDTH * 0, DEFAULT_CHAR_WIDTH, DEFAULT_CHAR_HEIGHT
+          ,map[y][x] * 80 , DEFAULT_CHAR_WIDTH * 0, DEFAULT_CHAR_WIDTH, DEFAULT_CHAR_HEIGHT
           ,DEFAULT_CHAR_WIDTH * x, DEFAULT_CHAR_HEIGHT * y, DEFAULT_CHAR_WIDTH, DEFAULT_CHAR_HEIGHT);
       }
     }
@@ -149,17 +165,17 @@ function movePlayer(){
   if(isKeyPressed[39]){ //오른쪽
     allObj["player"].xpos += allObj["player"].speed;
     allObj["player"].direct = DIRECT_RIGHT;
-    if(allObj["player"].act != ACT_JUMP){
+    if(allObj["player"].act != ACT_JUMP && allObj["player"].act != ACT_PNCH){
       allObj["player"].act = ACT_MOVE;
     }
-    if(allObj["player"].xpos > SCREEN_WIDTH-allObj["player"].width){
-      allObj["player"].xpos = SCREEN_WIDTH-allObj["player"].width;
+    if(allObj["player"].xpos > canvasWidth-allObj["player"].width){
+      allObj["player"].xpos = canvasWidth-allObj["player"].width;
     }
   }
   if(isKeyPressed[37]){ //왼쪽
     allObj["player"].xpos -= allObj["player"].speed;
     allObj["player"].direct = DIRECT_LEFT;
-    if(allObj["player"].act != ACT_JUMP){
+    if(allObj["player"].act != ACT_JUMP && allObj["player"].act != ACT_PNCH){
       allObj["player"].act = ACT_MOVE;
     }
     if(allObj["player"].xpos < 0){
@@ -190,18 +206,14 @@ function moveSlime(){
       slime.direct = DIRECT_RIGHT;
       slime.act = ACT_MOVE;
       slime.xpos += slime.speed;
-      if(slime.xpos > SCREEN_WIDTH-slime.width){
-        slime.xpos = SCREEN_WIDTH-slime.width;
+      if(slime.xpos > canvasWidth-slime.width){
+        slime.xpos = canvasWidth-slime.width;
       }
     }
   }else{
     slime.act = ACT_IDLE;
   }
   
-}
-
-function onGameStart(){
-  drawIntervalId = setInterval(drawScreen, 1000/fps)
 }
 
 function onGameStop(){
