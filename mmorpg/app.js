@@ -17,10 +17,10 @@ const ACT_PNCH = 6;
 let dataIntervalId = 0;
 let drawIntervalId = 0;
 var isKeyPressed = [];
-let fps = 5;
+let fps = 15;
 
 const PLAY_IMG = new Image();
-PLAY_IMG.src = '../images/player_ck.png';
+PLAY_IMG.src = '../images/jungha.png';
 
 const SLIME_IMG = new Image();
 SLIME_IMG.src = '../images/greenslime.png';
@@ -66,7 +66,7 @@ const map = [
   [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-  [ 0,  1,  2, -1,  0,  1,  1,  1,  2, -1,  0,  1,  1,  1,  1,  1,  1,  1,  1,  2]
+  [ 0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2]
 ];
 
 function onGameStart(){
@@ -112,15 +112,6 @@ function drawGraund(context){
   for(let y=0; y<map.length; y++){
     let ymax = map[y].length;
     for(let x=0; x<ymax; x++){
-      // let tileType = 0;
-      // if(x == 0){
-      //   tileType = 0;
-      // }else if(x == ymax-1){
-      //   tileType = 160;
-      // }else{
-      //   tileType = 80;
-      // }
-      
       if(map[y][x] > -1){
         context.drawImage(MAP_IMG
           ,map[y][x] * 80 , DEFAULT_CHAR_WIDTH * 0, DEFAULT_CHAR_WIDTH, DEFAULT_CHAR_HEIGHT
