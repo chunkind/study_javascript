@@ -56,3 +56,4 @@ https://www.youtube.com/playlist?list=PLv2d7VI9OotR1tALnxov7sAUshyBmfYfU
 
 🤗 생산력 향상 팁
 https://www.youtube.com/playlist?list=PLv2d7VI9OotQB-9p29xrAnARhuE1Vf88I
+
